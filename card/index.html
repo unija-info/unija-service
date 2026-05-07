@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Runner Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        /* [KEEP ALL ORIGINAL CSS FROM PREVIOUS VERSION HERE] */
+        :root { --primary: #2563eb; --whatsapp: #25D366; --verified: #059669; --bg-gray: #f3f4f6; --text-dark: #1f2937; --text-muted: #6b7280; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-gray); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .profile-card { background: white; width: 100%; max-width: 380px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; display: none; } /* Hidden until loaded */
+        .card-header { padding: 30px 20px 10px; text-align: center; position: relative; }
+        .profile-img-container { width: 110px; height: 110px; margin: 0 auto 15px; position: relative; }
+        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .status-dot {
+    width: 16px;
+    height: 16px;
+    background: #d1d5db; /* Gray */
+    border: 3px solid white;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    transition: background 0.3s ease;
+}
+        /* Active state: Green + Pulse Animation */
+.status-active .status-dot {
+    background: #10b981; /* This is the Green color */
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); }
+}
+        .card-body { padding: 0 24px 24px; text-align: center; }
+        .name-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px; }
+        .name { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+        .verified-badge { color: var(--verified); font-size: 1rem; }
+        .runner-id-badge { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; display: block; }
+        .verification-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: inline-block; padding: 2px 8px; border-radius: 12px; }
+        .label-verified { background: #d1fae5; color: var(--verified); }
+        .label-unverified { background: #fee2e2; color: #ef4444; }
+        .description { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+        .tags-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        .tag { background: #eff6ff; color: var(--primary); font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f9fafb; padding: 15px; border-radius: 16px; margin-bottom: 20px; text-align: left; }
+        .info-item label { display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+        .info-item span { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+        .actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s; text-decoration: none; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-charge { background: white; color: var(--text-dark); border: 1px solid #e5e7eb; }
+        .phone-copy { margin-top: 15px; font-size: 0.85rem; color: var(--primary); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+        .copy-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #374151; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; }
+        
+        /* Overlay CSS */
+        .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1500; overflow-y: auto; padding: 40px 20px; align-items: center; justify-content: center; }
+        .receipt { background: #fff; width: 100%; max-width: 340px; padding: 30px 20px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Courier Prime', monospace; color: #1a1a1a; margin: auto; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .receipt::after { content: ""; position: absolute; left: 0; bottom: -10px; width: 100%; height: 10px; background: linear-gradient(-45deg, transparent 5px, white 5px), linear-gradient(45deg, transparent 5px, white 5px); background-size: 10px 10px; }
+        .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
+        .receipt-body { font-size: 0.95rem; line-height: 1.6; }
+        .receipt-body p { margin-bottom: 12px; }
+        .receipt-body a { color: var(--primary); word-break: break-all; text-decoration: underline; }
+        .close-overlay { display: block; margin-top: 25px; text-align: center; color: #ef4444; font-size: 0.8rem; font-weight: bold; text-decoration: underline; cursor: pointer; letter-spacing: 1px; }
+
+        /* NEW: Loading Styles */
+        .loader-container { text-align: center; color: var(--text-muted); }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="copy-toast">Number Copied!</div>
+
+    <!-- NEW: Loading Wrapper -->
+    <div id="loadingUI" class="loader-container">
+        <div class="spinner"></div>
+        <p>Fetching runner details...</p>
+    </div>
+
+    <!-- FULL SCREEN RECEIPT OVERLAY -->
+    <div class="overlay" id="receiptOverlay" onclick="toggleReceipt(false)">
+        <div class="receipt" onclick="event.stopPropagation()">
+            <div class="receipt-header">
+                <strong>OFFICIAL RECEIPT</strong><br>
+                <small>RUNNER ID: <span id="receiptRunnerId"></span></small><br>
+                <small id="receiptDate" style="font-size: 0.65rem; opacity: 0.7;"></small>
+            </div>
+            <div class="receipt-body" id="markdownContent"></div>
+            <span class="close-overlay" onclick="toggleReceipt(false)">[ CLOSE RECEIPT ]</span>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="profile-card" id="mainCard">
+        <div class="card-header" id="headerContainer">
+            <div class="profile-img-container">
+                <img src="" alt="Profile" class="profile-img" id="profileImg">
+                <div class="status-dot"></div>
+            </div>
+            <div class="name-row">
+                <h1 class="name" id="studentName"></h1>
+                <i class="fas fa-check-circle verified-badge" id="verifiedIcon"></i>
+            </div>
+            <span class="runner-id-badge" id="cardRunnerId"></span>
+            <div class="verification-label" id="verifiedLabel"></div>
+        </div>
+
+        <div class="card-body">
+            <p class="description" id="description"></p>
+            <div class="tags-container" id="tagsContainer"></div>
+            <div class="info-grid">
+                <div class="info-item"><label>Duration</label><span id="duration"></span></div>
+                <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-charge" onclick="toggleReceipt(true)"><i class="fas fa-receipt"></i> Service Charges</button>
+                <a href="#" class="btn btn-whatsapp" id="whatsappBtn"><i class="fab fa-whatsapp"></i> Order via WhatsApp</a>
+            </div>
+            <div class="phone-copy" onclick="copyNumber()"><i class="fas fa-copy"></i> <span id="phoneNumber"></span></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. USE THE "PUBLISH TO WEB" CSV URL HERE
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5oV-cl-4vxbKj_i-fzDravkHoGa6SUc-GYi8c2pv8NUKQSxtZv17vW0IWguQFfEqbWZburb_9FyCJ/pub?gid=0&single=true&output=csv";
+    
+        let studentProfile = {};
+    
+        // This version handles multiline text and commas inside cells correctly
+function csvToJSON(csv) {
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < csv.length; i++) {
+        const char = csv[i];
+        const nextChar = csv[i + 1];
+
+        if (char === '"' && inQuotes && nextChar === '"') {
+            currentCell += '"'; i++; // Handle escaped quotes
+        } else if (char === '"') {
+            inQuotes = !inQuotes; // Toggle quote state
+        } else if (char === ',' && !inQuotes) {
+            currentRow.push(currentCell.trim());
+            currentCell = '';
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            if (currentRow.length > 0 || currentCell !== '') {
+                currentRow.push(currentCell.trim());
+                rows.push(currentRow);
+                currentRow = [];
+                currentCell = '';
+            }
+        } else {
+            currentCell += char;
+        }
+    }
+    if (currentRow.length > 0 || currentCell !== '') {
+        currentRow.push(currentCell.trim());
+        rows.push(currentRow);
+    }
+
+    const headers = rows[0];
+    return rows.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((header, i) => {
+            obj[header] = row[i] || "";
+        });
+        return obj;
+    });
+}
+    
+        async function fetchRunnerData() {
+            const params = new URLSearchParams(window.location.search);
+            const targetId = params.get('id');
+    
+            if (!targetId) {
+                document.getElementById('loadingUI').innerHTML = "❌ No Runner ID provided.";
+                return;
+            }
+    
+            // 2. CHECK CACHE (Instant Load)
+            const cachedData = localStorage.getItem('runner_' + targetId);
+            if (cachedData) {
+                studentProfile = JSON.parse(cachedData);
+                renderCard(); // Show cached version immediately
+            }
+    
+            try {
+                // 3. FETCH CSV (Fast CDN)
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                const allRunners = csvToJSON(csvText);
+                
+                const freshProfile = allRunners.find(r => r.runnerId === targetId);
+    
+                if (freshProfile) {
+                    studentProfile = freshProfile;
+                    // Update Cache
+                    localStorage.setItem('runner_' + targetId, JSON.stringify(freshProfile));
+                    renderCard();
+                } else if (!cachedData) {
+                    document.getElementById('loadingUI').innerHTML = "❌ Runner not found.";
+                }
+            } catch (error) {
+                console.error("Fetch failed:", error);
+                if (!cachedData) document.getElementById('loadingUI').innerHTML = "❌ Connection Error.";
+            }
+        }
+    
+        function renderCard() {
+            // Switch UI
+            document.getElementById('loadingUI').style.display = "none";
+            document.getElementById('mainCard').style.display = "block";
+    
+            // Basic Info
+            document.getElementById('studentName').innerText = studentProfile.name || "";
+            document.getElementById('cardRunnerId').innerText = "ID: " + (studentProfile.runnerId || "");
+            document.getElementById('description').innerText = studentProfile.description || "";
+            document.getElementById('duration').innerText = studentProfile.duration || "";
+            document.getElementById('phoneNumber').innerText = studentProfile.phone || "";
+            document.getElementById('profileImg').src = studentProfile.profilePic || "";
+    
+            // Date Handling
+            let rawDate = studentProfile.validUntil;
+            document.getElementById('validUntil').innerText = (rawDate && rawDate.includes('T')) 
+                ? new Date(rawDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) 
+                : rawDate;
+    
+            // Status & Verification (Normalization)
+            const isVerified = String(studentProfile.isVerified).toUpperCase().trim() === 'TRUE';
+            const isActive = String(studentProfile.isActive).toUpperCase().trim() === 'TRUE';
+    
+            const vLabel = document.getElementById('verifiedLabel');
+            vLabel.innerText = isVerified ? "Verified Runner" : "Unverified";
+            vLabel.className = "verification-label " + (isVerified ? "label-verified" : "label-unverified");
+            document.getElementById('verifiedIcon').style.display = isVerified ? "block" : "none";
+    
+            const header = document.getElementById('headerContainer');
+            isActive ? header.classList.add('status-active') : header.classList.remove('status-active');
+    
+            // Tags
+            const tagsContainer = document.getElementById('tagsContainer');
+            tagsContainer.innerHTML = '';
+            if (studentProfile.tags) {
+                studentProfile.tags.split(',').forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'tag';
+                    span.innerText = tag.trim();
+                    tagsContainer.appendChild(span);
+                });
+            }
+    
+            // WhatsApp
+            const cleanPhone = String(studentProfile.phone).replace(/\D/g,'');
+            document.getElementById('whatsappBtn').href = `https://wa.me/${cleanPhone}?text=Hi, I need a delivery.`;
+        }
+    
+        // [Keep toggleReceipt and copyNumber as they were]
+        function toggleReceipt(show) {
+    const overlay = document.getElementById('receiptOverlay');
+    overlay.style.display = show ? 'flex' : 'none';
+
+    if (show) {
+        // --- ADD THIS LINE BELOW ---
+        marked.setOptions({ breaks: true, gfm: true }); 
+        
+        // Render the markdown
+        document.getElementById('markdownContent').innerHTML = marked.parse(studentProfile.serviceDetails || "");
+        
+        document.getElementById('receiptRunnerId').innerText = studentProfile.runnerId;
+        document.getElementById('receiptDate').innerText = new Date().toLocaleString();
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'auto';
+    }
+}
+    
+        function copyNumber() {
+            navigator.clipboard.writeText(studentProfile.phone);
+            const toast = document.getElementById('toast');
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+        }
+    
+        fetchRunnerData();
+    </script>
+</body>
+</html>
