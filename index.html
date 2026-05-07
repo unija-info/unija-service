@@ -39,6 +39,7 @@
         }
         .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
         .grid-id { font-size: 0.7rem; color: #6b7280; display: block; }
+        .uniparcels-mini { display: inline-block; background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; border: 1px solid #fbbf24; }
 
         /* Skeleton Loader */
         .skeleton { background: #e5e7eb; border-radius: 16px; height: 150px; animation: pulse 1.5s infinite; }
@@ -87,6 +88,7 @@
                 <img src="${runner.profilePic}" class="card-img" alt="${runner.name}">
                 <span class="card-name">${runner.name}</span>
                 <span class="grid-id">${runner.runnerId}</span>
+                ${String(runner.isUniParcels).toLowerCase() === 'true' ? '<span class="uniparcels-mini">🎓 UniParcels</span>' : ''}
                 <div style="margin-top:8px; font-size: 0.75rem;">
                     <span class="grid-status ${String(runner.isActive).toLowerCase() === 'true' ? 'status-online' : ''}"></span>
                     ${String(runner.isActive).toLowerCase() === 'true' ? 'Active Now' : 'Offline'}

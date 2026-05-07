@@ -27,6 +27,7 @@
         .verification-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: inline-block; padding: 2px 8px; border-radius: 12px; }
         .label-verified { background: #d1fae5; color: var(--verified); }
         .label-unverified { background: #fee2e2; color: #ef4444; }
+        .uniparcels-pill { display: none; font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 12px; background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; margin-bottom: 10px; }
         .tags-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
         .tag { background: #eff6ff; color: var(--primary); font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f9fafb; padding: 15px; border-radius: 16px; margin-bottom: 20px; text-align: left; }
@@ -38,12 +39,17 @@
         .btn-charge { background: white; color: var(--text-dark); border: 1px solid #e5e7eb; }
         .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1500; overflow-y: auto; padding: 40px 20px; align-items: center; justify-content: center; }
         .receipt { background: #fff; width: 100%; max-width: 340px; padding: 30px 20px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Courier Prime', monospace; color: #1a1a1a; margin: auto; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .receipt * { font-family: 'Courier Prime', monospace; }
+        .receipt::after { content: ""; position: absolute; left: 0; bottom: -10px; width: 100%; height: 10px; background: linear-gradient(-45deg, transparent 5px, white 5px), linear-gradient(45deg, transparent 5px, white 5px); background-size: 10px 10px; }
         .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
         .receipt-body { font-size: 0.95rem; line-height: 1.6; }
-        .close-overlay { display: block; margin-top: 25px; text-align: center; color: #ef4444; font-size: 0.8rem; font-weight: bold; text-decoration: underline; cursor: pointer; }
+        .receipt-body p { margin-bottom: 12px; }
+        .receipt-body a { color: var(--primary); word-break: break-all; text-decoration: underline; }
+        .close-overlay { display: block; margin-top: 25px; text-align: center; color: #ef4444; font-size: 0.8rem; font-weight: bold; text-decoration: underline; cursor: pointer; letter-spacing: 1px; }
         .loader-container { text-align: center; color: var(--text-muted); padding-top: 50px;}
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -57,7 +63,8 @@
         <div class="receipt" onclick="event.stopPropagation()">
             <div class="receipt-header">
                 <strong>OFFICIAL RECEIPT</strong><br>
-                <small>RUNNER ID: <span id="receiptRunnerId"></span></small>
+                <small>RUNNER ID: <span id="receiptRunnerId"></span></small><br>
+                <small id="receiptDate" style="font-size: 0.65rem; opacity: 0.7;"></small>
             </div>
             <div class="receipt-body" id="markdownContent"></div>
             <span class="close-overlay" onclick="toggleReceipt(false)">[ CLOSE ]</span>
@@ -75,6 +82,7 @@
             </div>
             <span class="runner-id-badge" id="cardRunnerId"></span>
             <div class="verification-label" id="verifiedLabel"></div>
+            <div class="uniparcels-pill" id="uniparcelsPill">🎓 UniParcels Official</div>
         </div>
         <div class="card-body">
             <p id="description" style="font-size: 0.9rem; color: #6b7280; margin-bottom: 15px;"></p>
@@ -130,6 +138,10 @@
             document.getElementById('headerContainer').classList.add('status-active');
         }
 
+        if (String(studentProfile.isUniParcels).toLowerCase() === 'true') {
+            document.getElementById('uniparcelsPill').style.display = 'inline-block';
+        }
+
         const tagsContainer = document.getElementById('tagsContainer');
         studentProfile.tags.split(',').forEach(tag => {
             const span = document.createElement('span');
@@ -146,9 +158,13 @@
         const overlay = document.getElementById('receiptOverlay');
         overlay.style.display = show ? 'flex' : 'none';
         if (show) {
-            marked.setOptions({ breaks: true });
+            marked.setOptions({ breaks: true, gfm: true });
             document.getElementById('markdownContent').innerHTML = marked.parse(studentProfile.serviceDetails || "");
             document.getElementById('receiptRunnerId').innerText = studentProfile.runnerId;
+            document.getElementById('receiptDate').innerText = new Date().toLocaleString();
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
         }
     }
 
