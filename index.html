@@ -84,7 +84,7 @@
     function renderGrid(data) {
         const grid = document.getElementById('runnerGrid');
         grid.innerHTML = data.map(runner => `
-            <a href="profile.html?id=${runner.runnerId}" class="runner-card">
+            <a href="profile?id=${runner.runnerId}" class="runner-card">
                 <img src="${runner.profilePic}" class="card-img" alt="${runner.name}">
                 <span class="card-name">${runner.name}</span>
                 <span class="grid-id">${runner.runnerId}</span>
