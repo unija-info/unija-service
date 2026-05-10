@@ -1,7 +1,7 @@
 name: Sync Google Sheet to JSON
 on:
   schedule:
-    - cron: '*/5 * * * *' # Runs every 5 minutes
+    - cron: '*/5 * * * *' # Runs every 5 minutes (reliable trigger via cron-job.org)
   workflow_dispatch: # Allows you to run it manually
 
 jobs:
@@ -11,19 +11,41 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Fetch Data
+      - name: Fetch Main Sheet
         run: |
-          # Replace with your Published CSV URL
           curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5oV-cl-4vxbKj_i-fzDravkHoGa6SUc-GYi8c2pv8NUKQSxtZv17vW0IWguQFfEqbWZburb_9FyCJ/pub?gid=0&single=true&output=csv" -o data.csv
+
+      - name: Fetch Status Form Responses
+        run: |
+          curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vR04Q87P-owm0Z09Z6BWvGyYhsOzPQJzLw_nlG3loxsB5YHkxFy11YqkQ4G_X4ZWu8p3-r_II2_qyq-/pub?gid=1937342793&single=true&output=csv" -o status.csv
 
       - name: Convert CSV to JSON
         shell: python
         run: |
           import csv, json
+
           with open('data.csv', encoding='utf-8') as f:
-              # Use DictReader to automatically map headers
-              reader = csv.DictReader(f)
-              rows = list(reader)
+              rows = list(csv.DictReader(f))
+
+          with open('pins.json', encoding='utf-8') as f:
+              pins = json.load(f)
+
+          status_map = {}
+          try:
+              with open('status.csv', encoding='utf-8') as f:
+                  for row in csv.DictReader(f):
+                      runner_id = row.get('Runner ID', '').strip()
+                      pin = row.get('PIN', '').strip()
+                      status = row.get('Status', '').strip()
+                      if pins.get(runner_id) == pin and status in ('Active', 'Not Active'):
+                          status_map[runner_id] = 'TRUE' if status == 'Active' else 'FALSE'
+          except FileNotFoundError:
+              pass
+
+          for row in rows:
+              if row.get('runnerId') in status_map:
+                  row['isActive'] = status_map[row['runnerId']]
+
           with open('runners.json', 'w', encoding='utf-8') as f:
               json.dump(rows, f, indent=2)
 

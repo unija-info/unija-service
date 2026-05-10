@@ -88,6 +88,39 @@ Use `availability` for specific operating hour details (e.g. `Isnin - Jumaat: 9p
 
 ## GitHub Actions Sync
 
-`.github/workflows/sync.yml` requires **Read and write permissions** enabled for Actions in repo settings (`Settings → Actions → General → Workflow permissions`). The Google Sheets CSV URL is hardcoded in the workflow file.
+`.github/workflows/sync.yml` requires **Read and write permissions** enabled for Actions in repo settings (`Settings → Actions → General → Workflow permissions`).
 
 GitHub's built-in cron (`*/5 * * * *`) is unreliable and can be delayed by hours. A **cron-job.org** job is configured to trigger `workflow_dispatch` every 5 minutes via the GitHub API as a reliable alternative. Both can run simultaneously without conflict — if data is unchanged, the workflow skips the commit (`git commit || exit 0`).
+
+The sync fetches two CSVs:
+- **Main sheet** — hardcoded URL in sync.yml, admin-managed
+- **Form responses sheet** — hardcoded URL in sync.yml (`FORM_RESPONSES_CSV_URL` placeholder, replace once form is created)
+
+## Runner Status Self-Update (PIN System)
+
+Runners can toggle their own `isActive` status via a Google Form without admin access.
+
+### How it works
+1. Runner submits the Google Form with their Runner ID, PIN, and desired status (Online/Offline)
+2. sync.yml fetches form responses, validates PIN against `pins.json`, and merges `isActive` into the output
+3. Latest valid submission per runner wins; wrong PIN submissions are silently ignored
+4. If a runner has never submitted the form, `isActive` falls back to whatever is set in the main sheet
+
+### Google Form fields (exact labels)
+| Label | Type | Options |
+|---|---|---|
+| `Runner ID` | Short answer | e.g. `RN-2024-001` |
+| `PIN` | Short answer | 4-digit number |
+| `Status` | Multiple choice | `Active` / `Not Active` |
+
+### PIN management — `pins.json`
+Stored in the repo root. Safe because the repo is **private**.
+
+```json
+{
+  "RN-2024-001": "4521",
+  "RN-2024-002": "8834"
+}
+```
+
+To add a new runner: append their entry and commit. To change a PIN: update their value and commit. Share the PIN privately with the runner — never put it in the Google Sheet or any public file.
