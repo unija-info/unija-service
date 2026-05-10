@@ -94,6 +94,10 @@
                 <div class="info-item"><label>Duration</label><span id="duration"></span></div>
                 <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
             </div>
+            <div id="availabilityRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
+                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-clock" style="margin-right:4px;"></i>Masa Operasi</label>
+                <span id="availability" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></span>
+            </div>
             <div class="actions">
                 <button class="btn btn-charge" onclick="toggleReceipt(true)"><i class="fas fa-receipt"></i> Service Charges</button>
                 <a href="#" class="btn btn-whatsapp" id="whatsappBtn"><i class="fab fa-whatsapp"></i> Order Now</a>
@@ -152,6 +156,11 @@
             span.innerText = tag.trim();
             tagsContainer.appendChild(span);
         });
+
+        if (studentProfile.availability) {
+            document.getElementById('availability').innerText = studentProfile.availability;
+            document.getElementById('availabilityRow').style.display = '';
+        }
 
         const cleanPhone = String(studentProfile.phone).replace(/\D/g,'');
         document.getElementById('whatsappBtn').href = `https://wa.me/${cleanPhone}?text=Hi ${studentProfile.name}, I need a delivery.`;
