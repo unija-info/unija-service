@@ -94,9 +94,13 @@
                 <div class="info-item"><label>Duration</label><span id="duration"></span></div>
                 <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
             </div>
-            <div id="availabilityRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
-                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-clock" style="margin-right:4px;"></i>Masa Operasi</label>
+            <div id="availabilityRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:12px; text-align:left;">
+                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-clock" style="margin-right:4px;"></i>Availability</label>
                 <span id="availability" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></span>
+            </div>
+            <div id="kawasanRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
+                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>Kawasan</label>
+                <span id="kawasan" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></span>
             </div>
             <div class="actions">
                 <button class="btn btn-charge" onclick="toggleReceipt(true)"><i class="fas fa-receipt"></i> Service Charges</button>
@@ -158,8 +162,14 @@
         });
 
         if (studentProfile.availability) {
-            document.getElementById('availability').innerText = studentProfile.availability;
+            document.getElementById('availability').innerHTML = studentProfile.availability
+                .split('|').map(s => s.trim()).join('<br>');
             document.getElementById('availabilityRow').style.display = '';
+        }
+
+        if (studentProfile.kawasan) {
+            document.getElementById('kawasan').innerText = studentProfile.kawasan;
+            document.getElementById('kawasanRow').style.display = '';
         }
 
         const cleanPhone = String(studentProfile.phone).replace(/\D/g,'');

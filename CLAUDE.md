@@ -56,13 +56,15 @@ index.html / profile.html
 | `isActive` | `"TRUE"/"FALSE"` | Online status dot |
 | `duration` | string | e.g. `Full Sem` |
 | `validUntil` | string | Human-readable date |
-| `tags` | string | Comma-separated, e.g. `Food, Parcels` |
+| `tags` | string | Comma-separated, e.g. `Beli Makanan, Parcels, 24 Jam` |
 | `serviceDetails` | string | Markdown; rendered in receipt modal |
+| `availability` | string | Free-text operating hours; displayed as "Availability" on profile. Use ` \| ` to separate multiple schedules into separate lines. Hidden if empty. |
+| `kawasan` | string | Coverage area; displayed as "Kawasan" on profile. e.g. `Dalam Kampus Sahaja`. Hidden if empty. |
 
 ### Page Behaviour
 
 - **`index.html`**: Loads `runners.json`, renders a card grid, filters by name/description via live search. Card links go to `profile.html?id=[runnerId]`.
-- **`profile.html`**: Reads `?id=` URL param, finds matching runner, hydrates the page. Renders `serviceDetails` as Markdown (marked.js CDN). WhatsApp button uses `wa.me/{phone}?text=...`. Green pulsing dot shown when `isActive === "TRUE"`.
+- **`profile.html`**: Reads `?id=` URL param, finds matching runner, hydrates the page. Renders `serviceDetails` as Markdown (marked.js CDN). WhatsApp button uses `wa.me/{phone}?text=...`. Green pulsing dot shown when `isActive === "TRUE"`. `availability` row shown only when field is non-empty.
 
 ## Key Patterns
 
@@ -71,6 +73,21 @@ index.html / profile.html
 - **External CDNs**: Font Awesome 6.4.0, Google Fonts (Inter), marked.min.js for Markdown.
 - **Cache-busting**: Append `?v=${Date.now()}` when fetching `runners.json` to avoid stale data.
 
+### Tags Convention
+
+`tags` is a comma-separated string. Use values from these categories — a runner can combine tags from multiple categories:
+
+| Category | Values |
+|---|---|
+| Jenis Perkhidmatan | `Beli Makanan`, `Beli Barang`, `Hantar Barang`, `Parcels`, `Fotocopy / Print`, `Laundry`, `COD` |
+| Had Perkhidmatan | `Perempuan Sahaja`, `Lelaki Sahaja` |
+| Kawasan | `Dalam Kampus Sahaja`, `Dalam dan Luar Kampus` |
+| Masa | `24 Jam`, `Waktu Siang`, `Waktu Malam`, `Hujung Minggu` |
+
+Use `availability` for specific operating hour details (e.g. `Isnin - Jumaat: 9pagi - 9malam | Sabtu: 9pagi - 1petang`). Separate multiple schedules with ` | ` on a single line — newlines are not supported.
+
 ## GitHub Actions Sync
 
 `.github/workflows/sync.yml` requires **Read and write permissions** enabled for Actions in repo settings (`Settings → Actions → General → Workflow permissions`). The Google Sheets CSV URL is hardcoded in the workflow file.
+
+GitHub's built-in cron (`*/5 * * * *`) is unreliable and can be delayed by hours. A **cron-job.org** job is configured to trigger `workflow_dispatch` every 5 minutes via the GitHub API as a reliable alternative. Both can run simultaneously without conflict — if data is unchanged, the workflow skips the commit (`git commit || exit 0`).
