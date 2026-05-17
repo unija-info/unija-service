@@ -13,6 +13,9 @@ jobs:
         run: |
           curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5oV-cl-4vxbKj_i-fzDravkHoGa6SUc-GYi8c2pv8NUKQSxtZv17vW0IWguQFfEqbWZburb_9FyCJ/pub?gid=0&single=true&output=csv" -o data.csv
 
+      - name: Write Pins
+        run: echo '${{ secrets.PINS_JSON }}' > pins.json
+
       - name: Fetch Status Form Responses
         run: |
           curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vR04Q87P-owm0Z09Z6BWvGyYhsOzPQJzLw_nlG3loxsB5YHkxFy11YqkQ4G_X4ZWu8p3-r_II2_qyq-/pub?gid=1937342793&single=true&output=csv" -o status.csv
