@@ -13,12 +13,9 @@ jobs:
         run: |
           curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5oV-cl-4vxbKj_i-fzDravkHoGa6SUc-GYi8c2pv8NUKQSxtZv17vW0IWguQFfEqbWZburb_9FyCJ/pub?gid=0&single=true&output=csv" -o data.csv
 
-      - name: Write Pins
-        run: echo '${{ secrets.PINS_JSON }}' > pins.json
-
-      - name: Fetch Status Form Responses
+      - name: Fetch Current Status
         run: |
-          curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vR04Q87P-owm0Z09Z6BWvGyYhsOzPQJzLw_nlG3loxsB5YHkxFy11YqkQ4G_X4ZWu8p3-r_II2_qyq-/pub?gid=1937342793&single=true&output=csv" -o status.csv
+          curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vR04Q87P-owm0Z09Z6BWvGyYhsOzPQJzLw_nlG3loxsB5YHkxFy11YqkQ4G_X4ZWu8p3-r_II2_qyq-/pub?gid=1597133470&single=true&output=csv" -o current_status.csv
 
       - name: Convert CSV to JSON
         shell: python
@@ -28,18 +25,14 @@ jobs:
           with open('data.csv', encoding='utf-8') as f:
               rows = list(csv.DictReader(f))
 
-          with open('pins.json', encoding='utf-8') as f:
-              pins = json.load(f)
-
           status_map = {}
           try:
-              with open('status.csv', encoding='utf-8') as f:
+              with open('current_status.csv', encoding='utf-8') as f:
                   for row in csv.DictReader(f):
-                      runner_id = row.get('Runner ID', '').strip()
-                      pin = row.get('PIN', '').strip()
-                      status = row.get('Status', '').strip()
-                      if pins.get(runner_id) == pin and status in ('Active', 'Not Active'):
-                          status_map[runner_id] = 'TRUE' if status == 'Active' else 'FALSE'
+                      runner_id = row.get('runnerId', '').strip()
+                      is_active = row.get('isActive', '').strip()
+                      if runner_id and is_active in ('TRUE', 'FALSE'):
+                          status_map[runner_id] = is_active
           except FileNotFoundError:
               pass
 
