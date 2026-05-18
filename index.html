@@ -95,7 +95,8 @@
     async function loadRunners() {
         try {
             const response = await fetch(DATA_SOURCE);
-            allRunners = await response.json();
+            const all = await response.json();
+            allRunners = all.filter(r => String(r.isTest).toLowerCase() !== 'true');
             renderGrid(allRunners);
         } catch (e) {
             console.error("Failed to load runners. Ensure runners.json exists.");

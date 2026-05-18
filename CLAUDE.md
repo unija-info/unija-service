@@ -60,6 +60,9 @@ index.html / profile.html
 | `serviceDetails` | string | Markdown; rendered in receipt modal |
 | `availability` | string | Free-text operating hours; displayed as "Availability" on profile. Use ` \| ` to separate multiple schedules into separate lines. Hidden if empty. |
 | `kawasan` | string | Coverage area; displayed as "Kawasan" on profile. e.g. `Dalam Kampus Sahaja`. Hidden if empty. |
+| `kriteriaP` | string | Customer gender criteria: `Wanita`, `Lelaki`, or `Terbuka` (default). Displayed in Maklumat Perkhidmatan. |
+| `registeredOn` | string | Registration date, format `D Mon YYYY` (e.g. `1 Jan 2024`). Displayed as "Ahli Sejak" with Malay duration. Hidden if empty. |
+| `isTest` | `"TRUE"/"FALSE"` | When TRUE, hidden from index.html grid and search; profile URL still accessible directly. |
 
 ### Page Behaviour
 
