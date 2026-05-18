@@ -41,6 +41,7 @@
         .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
         .grid-id { font-size: 0.65rem; color: #6b7280; display: block; margin-bottom: 2px; }
         .uniparcels-mini { display: inline-block; background: #fef3c7; color: #92400e; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; border: 1px solid #fbbf24; }
+        .expired-mini { display: inline-block; background: #fee2e2; color: #dc2626; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; border: 1px solid #fca5a5; }
 
         /* Skeleton */
         .skeleton { background: #e5e7eb; border-radius: 16px; height: 140px; animation: shimmer 1.5s infinite; }
@@ -101,6 +102,14 @@
         }
     }
 
+    function isExpired(validUntil) {
+        if (!validUntil) return false;
+        const d = new Date(validUntil);
+        if (isNaN(d)) return false;
+        const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+        return new Date() > endOfMonth;
+    }
+
     function renderGrid(data) {
         const grid = document.getElementById('runnerGrid');
         grid.innerHTML = data.map(runner => `
@@ -109,6 +118,7 @@
                 <span class="card-name">${runner.name}</span>
                 <span class="grid-id">${runner.runnerId}</span>
                 ${String(runner.isUniParcels).toLowerCase() === 'true' ? '<span class="uniparcels-mini">🎓 UniParcels</span>' : ''}
+                ${isExpired(runner.validUntil) ? '<span class="expired-mini">Tamat Tempoh</span>' : ''}
                 <div style="margin-top:8px; font-size: 0.75rem;">
                     <span class="grid-status ${String(runner.isActive).toLowerCase() === 'true' ? 'status-online' : ''}"></span>
                     ${String(runner.isActive).toLowerCase() === 'true' ? 'Active Now' : 'Offline'}

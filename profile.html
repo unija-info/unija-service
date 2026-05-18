@@ -85,6 +85,7 @@
             <div class="label-stack">
                 <div class="verification-label" id="verifiedLabel"></div>
                 <div class="uniparcels-pill" id="uniparcelsPill">🎓 UniParcels</div>
+                <div id="expiredBadge" style="display:none; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; border-radius:12px; background:#fee2e2; color:#dc2626;">Tamat Tempoh</div>
             </div>
         </div>
         <div class="card-body">
@@ -94,13 +95,32 @@
                 <div class="info-item"><label>Duration</label><span id="duration"></span></div>
                 <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
             </div>
-            <div id="availabilityRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:12px; text-align:left;">
-                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-clock" style="margin-right:4px;"></i>Availability</label>
-                <span id="availability" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></span>
-            </div>
-            <div id="kawasanRow" style="display:none; background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
-                <label style="display:block; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;"><i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>Kawasan</label>
-                <span id="kawasan" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></span>
+            <div style="background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
+                <div style="font-size:0.7rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">Maklumat Perkhidmatan</div>
+
+                <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                    <i class="fas fa-user-check" style="color:#6b7280; width:14px; margin-top:3px;"></i>
+                    <div>
+                        <div style="font-size:0.7rem; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">Kriteria Pelanggan</div>
+                        <div id="kriteria" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></div>
+                    </div>
+                </div>
+
+                <div id="kawasanItem" style="display:none; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                    <i class="fas fa-map-marker-alt" style="color:#6b7280; width:14px; margin-top:3px;"></i>
+                    <div>
+                        <div style="font-size:0.7rem; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">Kawasan</div>
+                        <div id="kawasan" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></div>
+                    </div>
+                </div>
+
+                <div id="availabilityItem" style="display:none; align-items:flex-start; gap:8px;">
+                    <i class="fas fa-clock" style="color:#6b7280; width:14px; margin-top:3px;"></i>
+                    <div>
+                        <div style="font-size:0.7rem; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">Waktu Operasi</div>
+                        <div id="availability" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></div>
+                    </div>
+                </div>
             </div>
             <div class="actions">
                 <button class="btn btn-charge" onclick="toggleReceipt(true)"><i class="fas fa-receipt"></i> Service Details & Charges</button>
@@ -153,6 +173,10 @@
             document.getElementById('uniparcelsPill').style.display = 'inline-block';
         }
 
+        if (isExpired(studentProfile.validUntil)) {
+            document.getElementById('expiredBadge').style.display = 'inline-block';
+        }
+
         const tagsContainer = document.getElementById('tagsContainer');
         studentProfile.tags.split(',').forEach(tag => {
             const span = document.createElement('span');
@@ -161,19 +185,35 @@
             tagsContainer.appendChild(span);
         });
 
-        if (studentProfile.availability) {
-            document.getElementById('availability').innerHTML = studentProfile.availability
-                .split('|').map(s => s.trim()).join('<br>');
-            document.getElementById('availabilityRow').style.display = '';
-        }
+        const kriteriaMap = {
+            'Wanita': 'Eksklusif untuk Pelanggan Wanita Sahaja',
+            'Lelaki': 'Eksklusif untuk Pelanggan Lelaki Sahaja',
+            'Terbuka': 'Terbuka kepada Semua (Lelaki & Perempuan)'
+        };
+        document.getElementById('kriteria').innerText =
+            kriteriaMap[studentProfile.kriteriaP] || 'Terbuka kepada Semua (Lelaki & Perempuan)';
 
         if (studentProfile.kawasan) {
             document.getElementById('kawasan').innerText = studentProfile.kawasan;
-            document.getElementById('kawasanRow').style.display = '';
+            document.getElementById('kawasanItem').style.display = 'flex';
+        }
+
+        if (studentProfile.availability) {
+            document.getElementById('availability').innerHTML = studentProfile.availability
+                .split('|').map(s => s.trim()).join('<br>');
+            document.getElementById('availabilityItem').style.display = 'flex';
         }
 
         const cleanPhone = String(studentProfile.phone).replace(/\D/g,'');
         document.getElementById('whatsappBtn').href = `https://wa.me/${cleanPhone}?text=Hi ${studentProfile.name}, I need a delivery.`;
+    }
+
+    function isExpired(validUntil) {
+        if (!validUntil) return false;
+        const d = new Date(validUntil);
+        if (isNaN(d)) return false;
+        const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+        return new Date() > endOfMonth;
     }
 
     function toggleReceipt(show) {
