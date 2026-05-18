@@ -43,6 +43,19 @@
         .uniparcels-mini { display: inline-block; background: #fef3c7; color: #92400e; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; border: 1px solid #fbbf24; }
         .expired-mini { display: inline-block; background: #fee2e2; color: #dc2626; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; border: 1px solid #fca5a5; }
 
+        /* Filter Bar */
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; max-width: 720px; margin: 0 auto 20px; justify-content: center; }
+        .filter-pill {
+            background: white; border: 1.5px solid #d1d5db; border-radius: 20px;
+            padding: 5px 12px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; color: #6b7280; font-family: 'Inter', sans-serif;
+            transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .filter-pill:hover { border-color: #2563eb; color: #2563eb; }
+        .filter-pill.active { background: #2563eb; border-color: #2563eb; color: white; }
+        .filter-divider { width: 100%; height: 0; }
+        .dot-active { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+
         /* Skeleton */
         .skeleton { background: #e5e7eb; border-radius: 16px; height: 140px; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
@@ -80,6 +93,29 @@
     <div class="search-container">
         <i class="fas fa-search search-icon"></i>
         <input type="text" id="searchInput" class="search-input" placeholder="Search by name or area...">
+        <p id="searchHint" style="display:none; font-size:0.8rem; color:#6b7280; margin-top:6px; text-align:center;"></p>
+    </div>
+
+    <div class="filter-bar">
+        <button class="filter-pill" id="filter-activeOnly" onclick="toggleFilter('activeOnly')"><span class="dot-active"></span> Active Now</button>
+        <button class="filter-pill" id="filter-uniParcelsOnly" onclick="toggleFilter('uniParcelsOnly')">🎓 UniParcels</button>
+
+        <div class="filter-divider"></div>
+
+        <button class="filter-pill svc-pill active" data-tag="" onclick="setServiceFilter('')">All Services</button>
+        <button class="filter-pill svc-pill" data-tag="Beli Makanan" onclick="setServiceFilter('Beli Makanan')">Beli Makanan</button>
+        <button class="filter-pill svc-pill" data-tag="Beli Barang" onclick="setServiceFilter('Beli Barang')">Beli Barang</button>
+        <button class="filter-pill svc-pill" data-tag="Hantar Barang" onclick="setServiceFilter('Hantar Barang')">Hantar Barang</button>
+        <button class="filter-pill svc-pill" data-tag="Parcels" onclick="setServiceFilter('Parcels')">Parcels</button>
+        <button class="filter-pill svc-pill" data-tag="Fotocopy / Print" onclick="setServiceFilter('Fotocopy / Print')">Fotocopy / Print</button>
+        <button class="filter-pill svc-pill" data-tag="Laundry" onclick="setServiceFilter('Laundry')">Laundry</button>
+        <button class="filter-pill svc-pill" data-tag="COD" onclick="setServiceFilter('COD')">COD</button>
+
+        <div class="filter-divider"></div>
+
+        <button class="filter-pill krit-pill active" data-val="" onclick="setKriteriaFilter('')">Semua</button>
+        <button class="filter-pill krit-pill" data-val="Wanita" onclick="setKriteriaFilter('Wanita')">Wanita</button>
+        <button class="filter-pill krit-pill" data-val="Lelaki" onclick="setKriteriaFilter('Lelaki')">Lelaki</button>
     </div>
 
     <div id="runnerGrid" class="runner-grid">
@@ -97,7 +133,7 @@
             const response = await fetch(DATA_SOURCE);
             const all = await response.json();
             allRunners = all.filter(r => String(r.isTest).toLowerCase() !== 'true');
-            renderGrid(allRunners);
+            applyFilters();
         } catch (e) {
             console.error("Failed to load runners. Ensure runners.json exists.");
         }
@@ -128,15 +164,90 @@
         `).join('');
     }
 
-    // Search Logic
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = allRunners.filter(r => 
-            r.name.toLowerCase().includes(term) || 
-            r.description.toLowerCase().includes(term)
+    let activeFilters = { activeOnly: false, uniParcelsOnly: false, serviceTag: '', kriteria: '' };
+
+    function applyFilters() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        let result = allRunners;
+
+        if (activeFilters.activeOnly)
+            result = result.filter(r => String(r.isActive).toLowerCase() === 'true');
+        if (activeFilters.uniParcelsOnly)
+            result = result.filter(r => String(r.isUniParcels).toLowerCase() === 'true');
+        if (activeFilters.serviceTag)
+            result = result.filter(r => (r.tags || '').toLowerCase().includes(activeFilters.serviceTag.toLowerCase()));
+        if (activeFilters.kriteria)
+            result = result.filter(r => (r.kriteriaP || '').toLowerCase() === activeFilters.kriteria.toLowerCase());
+
+        if (term) {
+            result = result.filter(r =>
+                r.name.toLowerCase().includes(term) ||
+                r.description.toLowerCase().includes(term) ||
+                (r.tags || '').toLowerCase().includes(term) ||
+                (r.kawasan || '').toLowerCase().includes(term) ||
+                (r.runnerId || '').toLowerCase().includes(term) ||
+                (r.availability || '').toLowerCase().includes(term) ||
+                (r.kriteriaP || '').toLowerCase().includes(term)
+            );
+        }
+
+        renderGrid(result);
+        updateSearchHint(document.getElementById('searchInput').value, result.length);
+    }
+
+    function toggleFilter(key) {
+        activeFilters[key] = !activeFilters[key];
+        document.getElementById('filter-' + key).classList.toggle('active', activeFilters[key]);
+        applyFilters();
+    }
+
+    function setServiceFilter(tag) {
+        activeFilters.serviceTag = tag;
+        document.querySelectorAll('.svc-pill').forEach(el =>
+            el.classList.toggle('active', el.dataset.tag === tag)
         );
-        renderGrid(filtered);
-    });
+        applyFilters();
+    }
+
+    function setKriteriaFilter(val) {
+        activeFilters.kriteria = val;
+        document.querySelectorAll('.krit-pill').forEach(el =>
+            el.classList.toggle('active', el.dataset.val === val)
+        );
+        applyFilters();
+    }
+
+    const KNOWN_KEYWORDS = [
+        'Beli Makanan', 'Beli Barang', 'Hantar Barang', 'Parcels',
+        'Fotocopy / Print', 'Laundry', 'COD',
+        'Perempuan Sahaja', 'Lelaki Sahaja',
+        'Dalam Kampus Sahaja', 'Dalam dan Luar Kampus',
+        '24 Jam', 'Waktu Siang', 'Waktu Malam', 'Hujung Minggu',
+        'Wanita', 'Lelaki', 'Terbuka'
+    ];
+
+    function updateSearchHint(term, count) {
+        const hint = document.getElementById('searchHint');
+        if (!term) { hint.style.display = 'none'; return; }
+
+        const t = term.toLowerCase();
+        const match = KNOWN_KEYWORDS.find(k => k.toLowerCase().includes(t) && k.toLowerCase() !== t);
+
+        let text;
+        if (count === 0) {
+            text = `No results for: "${term}"`;
+        } else if (match) {
+            text = `Showing ${count} results for: ${term} > ${match}`;
+        } else {
+            text = `Showing ${count} results for: "${term}"`;
+        }
+
+        hint.textContent = text;
+        hint.style.display = 'block';
+    }
+
+    // Search Logic
+    document.getElementById('searchInput').addEventListener('input', () => applyFilters());
 
     loadRunners();
 </script>
