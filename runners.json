@@ -16,7 +16,8 @@
     "duration": "Full Semester",
     "registeredOn": "1 Apr 2026",
     "": "227 days from now",
-    "validUntil": "31 Dec 2026"
+    "validUntil": "31 Dec 2026",
+    "isTest": ""
   },
   {
     "runnerId": "RN-2024-002",
@@ -35,7 +36,8 @@
     "duration": "ALUMNI",
     "registeredOn": "2 Apr 2026",
     "": "227 days from now",
-    "validUntil": "31 Dec 2026"
+    "validUntil": "31 Dec 2026",
+    "isTest": "TRUE"
   },
   {
     "runnerId": "RN-2024-003",
@@ -54,6 +56,7 @@
     "duration": "Full Semester",
     "registeredOn": "3 Apr 2026",
     "": "Yesterday",
-    "validUntil": "17 May 2026"
+    "validUntil": "17 May 2026",
+    "isTest": ""
   }
 ]
