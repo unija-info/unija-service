@@ -91,14 +91,6 @@
         <div class="card-body">
             <p id="description" style="font-size: 0.9rem; color: #6b7280; margin-bottom: 15px;"></p>
             <div class="tags-container" id="tagsContainer"></div>
-            <div class="info-grid">
-                <div class="info-item"><label>Duration</label><span id="duration"></span></div>
-                <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
-                <div class="info-item" id="registeredRow" style="display:none; grid-column:1/-1;">
-                    <label>Ahli Sejak</label>
-                    <span id="registeredOn"></span>
-                </div>
-            </div>
             <div style="background:#f9fafb; padding:12px 15px; border-radius:16px; margin-bottom:20px; text-align:left;">
                 <div style="font-size:0.7rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">Maklumat Perkhidmatan</div>
 
@@ -124,6 +116,15 @@
                         <div style="font-size:0.7rem; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">Waktu Operasi</div>
                         <div id="availability" style="font-size:0.85rem; font-weight:600; color:var(--text-dark);"></div>
                     </div>
+                </div>
+            </div>
+            <div class="info-grid">
+                <div style="grid-column:1/-1; font-size:0.7rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em;">Maklumat Runner</div>
+                <div class="info-item"><label>Duration</label><span id="duration"></span></div>
+                <div class="info-item"><label>Valid Until</label><span id="validUntil"></span></div>
+                <div class="info-item" id="registeredRow" style="display:none; grid-column:1/-1;">
+                    <label>Ahli Sejak</label>
+                    <span id="registeredOn"></span>
                 </div>
             </div>
             <div class="actions">
@@ -197,9 +198,9 @@
         });
 
         const kriteriaMap = {
-            'Wanita': 'Eksklusif untuk Pelanggan Wanita Sahaja',
-            'Lelaki': 'Eksklusif untuk Pelanggan Lelaki Sahaja',
-            'Terbuka': 'Terbuka kepada Semua (Lelaki & Perempuan)'
+            'Wanita': 'Eksklusif untuk Wanita Sahaja',
+            'Lelaki': 'Eksklusif untuk Lelaki Sahaja',
+            'Terbuka': 'Terbuka kepada Semua'
         };
         document.getElementById('kriteria').innerText =
             kriteriaMap[studentProfile.kriteriaP] || 'Terbuka kepada Semua (Lelaki & Perempuan)';
@@ -236,15 +237,15 @@
 
         const totalDays = Math.floor((now - start) / 86400000);
 
-        if (totalDays < 60) return `${totalDays} hari`;
+        if (totalDays < 60) return `${totalDays} hari lepas`;
 
         if (years < 1) {
-            return days > 0 ? `${months} bulan ${days} hari` : `${months} bulan`;
+            return days > 0 ? `${months} bulan ${days} hari lepas` : `${months} bulan`;
         }
 
         let parts = `${years} tahun`;
         if (months > 0) parts += ` ${months} bulan`;
-        if (days > 0) parts += ` ${days} hari`;
+        if (days > 0) parts += ` ${days} hari lepas`;
         return parts;
     }
 
