@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Daftar Runner — Unija</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #005a9c;
+            --header-bg: #177E89;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --text: #333;
+            --muted: #5f6368;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .site-header {
+            background: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 24px;
+        }
+
+        .header-logo {
+            height: 44px;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .header-text p {
+            margin: 2px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.85;
+        }
+
+        /* ── Main ── */
+        .feedback-main {
+            flex: 1;
+            padding: 32px 20px;
+            max-width: 760px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── Intro card ── */
+        .feedback-intro {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-intro h2 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--header-bg);
+        }
+
+        .feedback-intro p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── iframe ── */
+        .google-form-iframe {
+            width: 100%;
+            min-height: 780px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card-bg);
+            display: block;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 20px 16px;
+            font-size: 0.8rem;
+            color: #888;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            margin: 4px 0;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .feedback-intro {
+                padding: 16px 18px;
+            }
+
+            .google-form-iframe {
+                min-height: 680px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <img src="https://view.unija.info/media/logo/unija-info.png" alt="Unija Info Logo" class="header-logo">
+        <div class="header-text">
+            <h1>Borang Daftar Runner</h1>
+            <p>Unija Runner Directory</p>
+        </div>
+    </header>
+
+    <main class="feedback-main">
+        <div class="feedback-intro">
+            <h2>Borang Kemaskini Status Available Runner</h2>
+            <p>Sila masukkan Runner ID dan PIN anda untuk mengemaskini status runner anda. Terima kasih!</p>
+        </div>
+
+        <iframe class="google-form-iframe"
+            src="https://docs.google.com/forms/d/e/1FAIpQLSd_oiEp9LS9-dVmI4nxs7UAHxqmPo67ET0kWJJoXSvP_vp-ZA/viewform"
+            frameborder="0">
+        </iframe>
+
+        <!-- Bug Report Form (swap src to use)
+        <iframe
+            class="google-form-iframe"
+            src="https://docs.google.com/forms/d/e/1FAIpQLSdd0Qm-qqCqgMs03CBJ7nQQA7mh1Th_ID6PYRx3AFJJjzUPbA/viewform"
+            frameborder="0">
+        </iframe>
+        -->
+    </main>
+
+    <footer>
+        <p><a href="/">Kembali ke Main Menu</a></p>
+        <p>Copyright 2025 | <a href="https://unija.info" target="_blank" rel="noopener noreferrer">unija.info</a> |
+            Version 1.0</p>
+        <p>Nak report masalah atau kemukakan cadangan? <a href="https://t.me/unija_minbot" target="_blank"
+                rel="noopener noreferrer">Chat Unija Minmin di Telegram</a></p>
+    </footer>
+
+</body>
+
+</html>

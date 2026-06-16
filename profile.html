@@ -145,7 +145,7 @@
         try {
             const response = await fetch(DATA_SOURCE);
             const data = await response.json();
-            studentProfile = data.find(r => r.runnerId === id);
+            studentProfile = data.find(r => r.runnerId.toLowerCase() === id.toLowerCase());
 
             if (studentProfile) render();
             else document.getElementById('loadingUI').innerText = "Runner Not Found";
