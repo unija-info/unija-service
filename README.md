@@ -55,19 +55,18 @@ A searchable digital directory and profile card system for student delivery runn
 
 2. **cron-job.org fires every 5 minutes** — sends a POST request to the GitHub API to trigger `workflow_dispatch` on `sync.yml`. This is more reliable than GitHub's native cron scheduler, which can delay scheduled jobs by hours.
 
-3. **GitHub Actions checks out the repo** — `pins.json` is available on disk during the workflow run.
+3. **GitHub Actions checks out the repo** and runs `sync.yml`.
 
 4. **Two CSVs are fetched**:
    - `data.csv` — main Google Sheet (admin-managed runner records)
-   - `status.csv` — Google Form responses sheet (runner-submitted status updates)
+   - `current_status.csv` — Current Status tab (written by `form.gs` after PIN validation)
 
 5. **Python script processes the data**:
    - Reads all rows from `data.csv` via `csv.DictReader`
-   - Loads `pins.json` (runnerId → PIN mapping)
-   - For each form response in `status.csv`: validates `Runner ID` + `PIN` against `pins.json`, and checks `Status` is `Active` or `Not Active`
-   - Builds a `status_map` — last valid submission per runner wins
+   - Builds a `status_map` from `current_status.csv` (`runnerId` → `isActive`)
    - Merges `isActive` from `status_map` into the main rows (overrides the sheet value)
    - Writes `runners.json` with 2-space indent
+   - Note: `sync.yml` performs **no PIN validation** — that is handled upstream by `form.gs`
 
 6. **`runners.json` is committed** — only if content changed. If nothing changed, the commit is skipped silently (`git commit || exit 0`).
 
@@ -91,33 +90,28 @@ Runners can toggle their own `isActive` status (Active / Not Active) without adm
 **How it works:**
 
 1. Runner submits the Google Form: enters their Runner ID, 4-digit PIN, and desired status
-2. The form response is appended to the Form Responses Sheet
-3. On next sync, `sync.yml` fetches the responses CSV and validates each entry against `pins.json`
-4. A valid entry (correct PIN + known runner ID) updates that runner's `isActive` in `runners.json`
-5. If a runner has never submitted the form, `isActive` falls back to whatever the admin set in the main sheet
+2. `onFormSubmit` fires in `script/form.gs` (Google Apps Script)
+3. `form.gs` validates the PIN against the **`PIN` tab** in the Google Spreadsheet
+4. If valid, `form.gs` writes `isActive` to the **`Current Status`** tab and logs to `History`
+5. On next sync (up to 5 min), `sync.yml` fetches the `Current Status` tab and merges `isActive` into `runners.json`
+6. If a runner has never submitted the form, `isActive` falls back to whatever the admin set in the main sheet
 
-**PIN management — `pins.json`:**
+**PIN management — `PIN` tab in Google Sheets:**
 
-```json
-{
-  "RN-2024-001": "4521",
-  "RN-2024-002": "8834"
-}
-```
+PINs are stored in the `PIN` tab of the Google Spreadsheet (Column A = `runnerId`, Column B = PIN). To manage PINs, edit this tab directly — there is no `pins.json` file.
 
-- One entry per runner: `"runnerId": "pin"`
-- To add a runner: append their entry to `pins.json` and commit
-- To change a PIN: update the value and commit
-- Share PINs privately with runners — never put them in the Google Sheet or any public file
-- Do not add `pins.json` to `.gitignore` — it must be checked out by `sync.yml`
+- To add a runner PIN: add a new row in the `PIN` tab
+- To change a PIN: update the value in Column B
+- Share PINs privately with runners — never put them in the main sheet or any public file
+- **Gotcha**: Format Column A as **Plain text** (`Format → Number → Plain text`) to preserve leading zeros (e.g., `001` otherwise becomes `1`)
 
 **Behaviour rules:**
 - Wrong PIN → submission silently ignored, status unchanged
-- No form submission ever → sheet value is used as-is
-- Latest valid submission per runner wins (CSV rows processed top-to-bottom; last match overwrites earlier ones)
-- Missing `status.csv` → gracefully skipped, no crash
+- No form submission ever → main sheet value is used as-is
+- Latest valid submission per runner wins
+- Form response rows are deleted immediately after `form.gs` reads them (keeps the sheet clean)
 
-**To force a status back to the sheet value:** delete the runner's row(s) from the Form Responses Sheet. On the next sync, no valid form entry will be found and the sheet value takes effect.
+**To force a status back to the sheet value:** the runner's submission is already deleted after processing. Simply update `isActive` directly in the main sheet — it takes effect on the next sync where no overriding `Current Status` entry exists for that runner. To fully reset, also delete their row from the `Current Status` tab.
 
 ---
 
@@ -125,7 +119,7 @@ Runners can toggle their own `isActive` status (Active / Not Active) without adm
 
 ### Adding a new runner
 1. Add a row to the Google Sheet with all required columns
-2. Add their PIN to `pins.json` and commit
+2. Add their PIN to the `PIN` tab in the Google Spreadsheet (Column A = runnerId, Column B = PIN)
 3. Share the PIN privately with the runner
 4. Changes appear on the live site within ~5 minutes
 
@@ -221,17 +215,18 @@ A successful trigger returns **204 No Content**. The GitHub token needs `repo` a
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| Runner submitted form but `isActive` didn't change | Wrong PIN entered | Verify the PIN in `pins.json` matches what was shared with the runner |
-| Correct PIN submitted but still not updating | Form column headers don't match expected names | Form columns must be exactly `Runner ID`, `PIN`, `Status` (case-sensitive) |
+| Runner submitted form but `isActive` didn't change | Wrong PIN entered | Verify the PIN in the `PIN` tab of the Google Spreadsheet matches what was shared with the runner |
+| Runner ID not recognised despite correct PIN | ID stored as number in PIN tab | Format Column A of PIN tab as Plain text — Sheets converts `001` to `1` automatically |
+| Correct PIN submitted but still not updating | Form field labels don't match expected names | Google Form fields must be exactly `Runner ID`, `PIN`, `Status` (case-sensitive) |
 | `Status` field value not recognised | Runner selected a custom option or typed freetext | Status must be exactly `Active` or `Not Active` — use multiple choice, not short answer |
-| Form responses sheet not being fetched | Sheet not published as CSV or wrong URL in `sync.yml` | Publish the Form Responses Sheet: File → Share → Publish to web → CSV; copy URL to `sync.yml` |
-| Admin set `isActive = FALSE` in sheet but runner appears active | Runner has a valid form submission overriding the sheet | Delete the runner's row(s) from the Form Responses Sheet; re-sync |
+| `form.gs` not triggering at all | Trigger not set up as installable trigger | Apps Script editor → Triggers → add `onFormSubmit` as an installable trigger (not a simple trigger) |
+| Admin set `isActive = FALSE` in sheet but runner appears active | Runner has a row in Current Status tab overriding the sheet | Delete the runner's row from the `Current Status` tab; re-sync |
 
 ### Profile Page Issues
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| "Runner Not Found" on profile page | `?id=` param doesn't exactly match `runnerId` | Check the URL — `runnerId` is case-sensitive (`RN-2024-001` not `rn-2024-001`) |
+| "Runner Not Found" on profile page | `?id=` param doesn't match any `runnerId` | `?id=` matching is case-insensitive — verify the runner ID exists in `runners.json` |
 | Green pulse dot not showing | `isActive` is `"FALSE"` or missing in `runners.json` | Check sheet value and any overriding form submission |
 | Availability row missing | `availability` field is empty in the sheet | Add availability to the sheet; row only shows when field is non-empty |
 | Kawasan row missing | `kawasan` field is empty in the sheet | Add kawasan to the sheet; row only shows when field is non-empty |
