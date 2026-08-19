@@ -15,7 +15,7 @@
     "isActive": "TRUE",
     "duration": "Full Semester",
     "registeredOn": "1 Apr 2026",
-    "": "134 days from now",
+    "": "133 days from now",
     "validUntil": "31 Dec 2026",
     "isTest": "TRUE"
   },
@@ -35,7 +35,7 @@
     "isActive": "TRUE",
     "duration": "ALUMNI",
     "registeredOn": "2 Apr 2026",
-    "": "134 days from now",
+    "": "133 days from now",
     "validUntil": "31 Dec 2026",
     "isTest": "TRUE"
   },
@@ -55,7 +55,7 @@
     "isActive": "TRUE",
     "duration": "Full Semester",
     "registeredOn": "3 Apr 2026",
-    "": "94 days ago",
+    "": "95 days ago",
     "validUntil": "17 May 2026",
     "isTest": "TRUE"
   },
@@ -75,7 +75,7 @@
     "isActive": "FALSE",
     "duration": "Full Semester",
     "registeredOn": "16 Jun 2026",
-    "": "134 days from now",
+    "": "133 days from now",
     "validUntil": "31 Dec 2026",
     "isTest": ""
   }
